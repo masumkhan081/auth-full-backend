@@ -7,5 +7,6 @@ module.exports = require("mongoose").model(
     phone: String,
     email: String,
     password: String,
+    isVerified: Boolean
   })
 );

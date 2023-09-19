@@ -1,10 +1,20 @@
 const router = require("express").Router();
-const { checkAndAddUser, checkAndLoginUser } = require("../controller/user");
+const {
+  checkAndAddUser,
+  checkAndLoginUser,
+  logOut,
+  checkForpassReset,
+  updateNewPassword,
+} = require("../controller/user");
+const { sendMail } = require("../controller/emailSender");
 const { cookieValidation } = require("./middlewares");
 
-router.use(cookieValidation);
+// router.use(cookieValidation);
 router.get("/", cookieValidation, (req, res) => {
   res.send(`you are good !`);
+});
+router.get("/profile", (req, res) => {
+  res.send(`profile`);
 });
 
 router.post("/register", (req, res) => {
@@ -16,24 +26,44 @@ router.post("/register", (req, res) => {
 
 router.post("/login", (req, res) => {
   // destructuring the expected
-  const { email, password } = req.body; 
+  const { email, password } = req.body;
   // validation and login
   checkAndLoginUser({ email, password, res });
 });
 
+router.get("/logout", (req, res) => {
+  logOut(req, res);
+});
+
 router.post("/recovery", (req, res) => {
+  // destructuring the expected
   const { email } = req.body;
-  sendOTPMail(email, res);
+  sendMail({ email, res, actType: "recovery" });
+});
+
+router.get("/recovery/:token", (req, res) => {
+  // destructuring the expected
+  const { token } = req.params;
+  checkForpassReset({ token, res });
 });
 
 router.post("/reset", (req, res) => {
   // destructuring the expected
   const { password } = req.body;
   // validation
+  res.send(password);
+  updateNewPassword({ password, res });
 });
 
 router.post("/verification", (req, res) => {
+  const { email } = req.body;
+  // res.send(email);
+  sendMail({ email, res, actType: "verification" });
+});
+
+router.post("/verify", (req, res) => {
   const { otp } = req.body;
+  res.send(otp);
 });
 
 module.exports = router;

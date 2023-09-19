@@ -23,7 +23,7 @@ app.use("/auth", require("./routes/authRoutes"));
 // close the server
 app.get("/quit", function (req, res) {
   res.send("closed");
-  server.close();
+  // server.close();
 });
 // server closing endpoint; no need what so ever
 app.get("/", (req, res) => {
