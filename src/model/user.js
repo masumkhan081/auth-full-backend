@@ -1,12 +1,33 @@
-const mongoose = require("mongoose");
-
 module.exports = require("mongoose").model(
-  "user",
+  "users",
   require("mongoose").Schema({
-    fullName: String,
-    phone: String,
-    email: String,
-    password: String,
-    isVerified: Boolean
+    fullName: {
+      type: String,
+      min: 4,
+      max: 100,
+      required: true,
+    },
+    phone: {
+      type: String,
+      min: 25,
+      max: 50,
+      required: true,
+    },
+    email: {
+      type: String,
+      min: 25,
+      max: 200,
+      required: true,
+    },
+    password: {
+      type: String,
+      min: 6,
+      max: 1024,
+      required: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   })
 );

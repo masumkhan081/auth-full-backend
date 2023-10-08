@@ -1,63 +1,99 @@
-const userModel = require("../model/user");
 require("dotenv").config();
-const tokenSecret = process.env.JWT_SECRET;
-const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
-const CryptoJS = require("crypto-js");
-
+const crypto = require("crypto-js");
+const { sendOTPMail } = require("./email");
+const userModel = require("../model/user");
 const tokenHeaderKey = process.env.HEADER_KEY;
+const tokenSecret = process.env.TOKEN_SECRET;
 
-function logOut(req, res) {
+function logout(res) {
   res.clearCookie(tokenHeaderKey);
-  res.send("cleared. user logged out");
+  res.status(201).send("cleared. user logged out");
 }
 
-async function checkAndAddUser({ fullName, email, password, phone, res }) {
-  // already registered or not
-  const existence = await userModel.findOne({ email: email }).exec();
+async function markValidated({ userEmail, userOTP, token, res }) {
+  // decrypted otp and it's expiry time, which to be validated against user typed otp
 
-  if (existence) {
-    res.status(409).send("Email is already in use");
+  const { expireAt, otp, email } = JSON.parse(
+    crypto.AES.decrypt(token, tokenSecret).toString(crypto.enc.Utf8)
+  );
+  console.log(expireAt, otp, email);
+  if (new Date().getTime() > expireAt) {
+    res.status(400).send({ message: "OTP expired" });
+  } else if (userOTP === otp && userEmail === email) {
+    (await userModel.findOneAndUpdate({ email }, { isVerified: true }))
+      ? res.status(200).send({ message: "Account verified. You may login " })
+      : res.status(400).send({ message: "Error verifying your account" });
   } else {
-    const user = new userModel({ fullName, email, password, phone });
-    const saved = await user.save();
-    if (saved) {
-      res.status(201).send({
-        fullName,
-        email,
-        password,
-        phone,
-        message: "You may login now",
-      });
-    } else {
-      res.status(400).send("Error creating account");
-    }
+    res.status(400).send({ message: "Invalid OTP" });
   }
 }
 
-async function checkAndLoginUser({ email, password, res }) {
+async function signup({ fullName, email, password, phone, res }) {
   // already registered or not
-  const existence = await userModel.findOne({ email, password });
+  const existence = await userModel.findOne({ email: email }).exec();
 
-  if (existence) {
-    // email and associated password matched
-    if (existence.isVerified) {
-      console.log(tokenHeaderKey, "  <<<<    ", existence.id, tokenSecret);
+  if (existence.isVerified) {
+    res.status(409).send("Email is already in use. Please log in");
+  } else if (existence.isVerified == false) {
+    sendOTPMail({
+      user: existence,
+      res,
+      successMessage:
+        "Account already exist. We sent an OTP to your email for verification.",
+    });
+  } else {
+    const user = await new userModel({
+      fullName,
+      email,
+      password,
+      phone,
+    }).save();
+    user
+      ? sendOTPMail({
+          user,
+          res,
+          successMessage:
+            "An OTP has been sent to your email for verification.",
+        })
+      : res.status(400).send("Error creating account");
+  }
+}
+
+async function login({ email, password, res }) {
+  // registered or not
+  const user = await userModel.findOne({ email, password });
+
+  if (user) {
+    // email and associated password matched and verified
+    if (user.isVerified) {
+      console.log(tokenHeaderKey, "  <<<<    ", user.id, tokenSecret);
       res
         .status(200)
-        .cookie(tokenHeaderKey, jwt.sign(existence.id, tokenSecret), {
-          expires: new Date(Date.now() + 36000),
-          overwrite: true,
-          httpOnly: true,
-        })
+        .cookie(
+          tokenHeaderKey,
+          JSON.stringify({
+            id: user.id,
+          }),
+          {
+            expire: 360000 + Date.now(),
+            overwrite: true,
+            httpOnly: true,
+          }
+        )
         .send({
           email,
           message: "You are logged in",
         });
     }
-    // email found but no match for password
+    // email and associated password matched but not-verified
     else {
-      res.status(401).send("Account Not Verified Yet");
+      sendOTPMail({
+        user,
+        res,
+        successMessage:
+          "Account not verified yet. We sent an OTP to your email for verification.",
+      });
     }
   }
   // no user with that email in system
@@ -66,21 +102,33 @@ async function checkAndLoginUser({ email, password, res }) {
   }
 }
 
-async function checkForpassReset({token,res}){
-  var bytes  = CryptoJS.AES.decrypt(token, tokenSecret );
-var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-console.log(decryptedData); // [{id: 1}, {id: 2}]
-  console.log(">>  ",token);
-  res.send("Hello")
+async function resetPw({ token, res }) {
+  const data = jwt.verify(token, tokenSecret);
+  if (data) {
+    const { id, expireAt, email } = data;
+    if (new Date().getTime() > expireAt) {
+      res.status(400).send({ message: "Reset link expired" });
+    } else {
+      (await userModel.findById(id))
+        ? res.status(200).send({ message: "ok " })
+        : res.status(400).send({ message: "Invalid reset link" });
+    }
+  } else {
+    res.status(400).send({ message: "Error processing link" });
+  }
 }
 
-async function updateNewPassword({ password, res }) {}
+async function updatePw({ email, password, res }) {
+  (await userModel.findOneAndUpdate({ email }, { password }))
+    ? res.status(200).send({ message: "Password updated successfully " })
+    : res.status(400).send({ message: "Error updating password" });
+}
 
 module.exports = {
-  checkAndAddUser,
-  checkAndLoginUser,
-  logOut,
-  checkForpassReset,
-  updateNewPassword,
+  signup,
+  login,
+  logout,
+  resetPw,
+  updatePw,
+  markValidated,
 };
