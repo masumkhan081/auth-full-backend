@@ -13,7 +13,7 @@ const { authentication } = require("./middlewares");
 const userModel = require("../model/user");
 
 // router.use(authentication);
-router.get("/", authentication, (req, res) => {
+router.get("/",  (req, res) => {
   res.send(`you are good !`);
 });
 
