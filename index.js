@@ -13,13 +13,7 @@ initDB();
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(
-  cors({
-    credentials: true,
-    origin: "http://localhost:5173",
-    // exposedHeaders: ["set-cookie"],
-  })
-);
+app.use(cors({credentials: true, origin: 'http://localhost:5173'}));
 //
 
 // const whitelist = ['http://localhost:5173', 'http://blablabla.com'];
