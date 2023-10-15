@@ -12,7 +12,7 @@ const {
 const { authentication,originControl } = require("./middlewares");
 const userModel = require("../model/user");
 
-router.use(originControl());
+router.use(originControl);
 
 router.get("/", (req, res) => {
   res.send(`you are good !`);
