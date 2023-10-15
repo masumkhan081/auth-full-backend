@@ -69,7 +69,7 @@ async function login({ email, password, res }) {
     if (user.isVerified) {
       console.log(tokenHeaderKey, "  <<<<    ", user.id, tokenSecret);
       res
-        .header({ "Access-Control-Allow-Origin": "http://localhost:5173" })
+        // .header({ "Access-Control-Allow-Origin": "http://localhost:5173" })
         .status(200)
         .cookie(
           tokenHeaderKey,
