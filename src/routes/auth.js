@@ -31,8 +31,9 @@ router.post("/register", (req, res) => {
 router.post("/login", (req, res) => {
   // destructuring the expected
   const { email, password } = req.body;
+  res.send({email, password })
   // validation and login
-  login({ email, password, res });
+  // login({ email, password, res });
 });
 
 router.get("/logout", (req, res) => {
