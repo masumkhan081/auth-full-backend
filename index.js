@@ -13,23 +13,23 @@ initDB();
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use((req,res,next)=>{
-  res.header({ "Access-Control-Allow-Origin": "http://localhost:5173" })
-  next();
-})
-// app.use(cors({ origin: 'http://localhost:5173'}));
+// app.use((req,res,next)=>{
+//   res.header({ "Access-Control-Allow-Origin": "http://localhost:5173" })
+//   next();
+// })
+// app.use(cors({ origin: "http://localhost:5173" }));
 //
 
-// const whitelist = ['http://localhost:5173', 'http://blablabla.com'];
-// const corsOptions = {
-//   credentials: true, // This is important.
-//   origin: (origin, callback) => {
-//     if(whitelist.includes(origin))
-//       return callback(null, true)
-//       callback(new Error('Not allowed by CORS'));
-//   }
-// }
-// app.use(cors(corsOptions));
+const whitelist = ['http://localhost:5173', 'http://blablabla.com'];
+const corsOptions = {
+  credentials: true, // This is important.
+  origin: (origin, callback) => {
+    if(whitelist.includes(origin))
+      return callback(null, true)
+      callback(new Error('Not allowed by CORS'));
+  }
+}
+app.use(cors(corsOptions));
 
 // routes
 app.use("/auth", require("./src/routes/auth"));

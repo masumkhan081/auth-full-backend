@@ -8,6 +8,7 @@ const userModel = require("../model/user");
 
 async function originControl(req,res,next){
   res.header({ "Access-Control-Allow-Origin": "http://localhost:5173" })
+  console.log("--- hi ");
   next();
 }
 

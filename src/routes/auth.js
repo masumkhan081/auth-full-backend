@@ -12,7 +12,8 @@ const {
 const { authentication,originControl } = require("./middlewares");
 const userModel = require("../model/user");
 
-router.use(originControl);
+// cors alternative - allows origin (front-end)
+router.use(originControl());
 
 router.get("/", (req, res) => {
   res.send(`you are good !`);
