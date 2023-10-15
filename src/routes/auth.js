@@ -9,11 +9,12 @@ const {
   markValidated,
 } = require("../controller/user");
 //
-const { authentication } = require("./middlewares");
+const { authentication,originControl } = require("./middlewares");
 const userModel = require("../model/user");
 
-// router.use(authentication);
-router.get("/",  (req, res) => {
+router.use(originControl);
+
+router.get("/", (req, res) => {
   res.send(`you are good !`);
 });
 
@@ -32,7 +33,7 @@ router.post("/login", (req, res) => {
   // destructuring the expected
   const { email, password } = req.body;
   // validation and login
-   login({ email, password, res });
+  login({ email, password, res });
 });
 
 router.get("/logout", (req, res) => {

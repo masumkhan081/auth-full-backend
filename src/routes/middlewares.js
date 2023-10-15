@@ -4,6 +4,13 @@ const tokenSecret = process.env.JWT_SECRET;
 const tokenHeaderKey = process.env.HEADER_KEY;
 const userModel = require("../model/user");
 
+
+
+async function originControl(req,res,next){
+  res.header({ "Access-Control-Allow-Origin": "http://localhost:5173" })
+  next();
+}
+
 async function authentication(req, res, next) {
   console.log(req.cookies[tokenHeaderKey]);
   if (req.cookies[tokenHeaderKey]) {
@@ -35,7 +42,7 @@ async function authorization(req, res, next) {
   }
 }
 
-module.exports = { authentication, authorization };
+module.exports = { authentication, authorization, originControl };
 
 //  401 - invalid credentials
 //  403 - Forbidden - has valid credentials but not enough privileges
