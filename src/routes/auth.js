@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const { sendOtpMail, sendResetMail } = require("../controller/email");
+// const { authentication } = require("..middleware/middlewares");
 const {
   signup,
   login,
@@ -8,12 +9,7 @@ const {
   updatePw,
   markValidated,
 } = require("../controller/user");
-//
-const { authentication,originControl } = require("./middlewares");
 const userModel = require("../model/user");
-
-// cors alternative - allows origin (front-end)
-// router.use(originControl());
 
 router.get("/", (req, res) => {
   res.send(`you are good !`);
