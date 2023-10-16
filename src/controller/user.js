@@ -80,6 +80,7 @@ async function login({ email, password, res }) {
             // overwrite: true,
             secure: true,
             httpOnly: true,
+            resave: true
           }
         )
         .send({
