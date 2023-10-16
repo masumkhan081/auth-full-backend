@@ -6,6 +6,17 @@ const userModel = require("../model/user");
 const tokenHeaderKey = process.env.HEADER_KEY;
 const tokenSecret = process.env.TOKEN_SECRET;
 
+async function isUserValid(req, res) {
+  if (req.cookies[tokenHeaderKey]) {
+    const user = await userModel.findById(
+      JSON.parse(req.cookies[tokenHeaderKey]).id
+    );
+    user
+      ? res.status(200).send({ status: "success", data: user })
+      : res.status(401).json("you are not logged in");
+  }
+}
+
 function logout(res) {
   res.clearCookie(tokenHeaderKey);
   res.status(201).send("cleared. user logged out");

@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { sendOtpMail, sendResetMail } = require("../controller/email");
 // const { authentication } = require("..middleware/middlewares");
 const {
+  isUserValid,
   signup,
   login,
   logout,
@@ -16,7 +17,7 @@ router.get("/", (req, res) => {
 });
 
 router.get("/profile", (req, res) => {
-  res.send(`profile`);
+  isUserValid(req, res);
 });
 
 router.post("/register", (req, res) => {
