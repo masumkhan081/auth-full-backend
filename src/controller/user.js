@@ -76,8 +76,8 @@ async function login({ email, password, res }) {
           }),
           {
             expire: 360000 + Date.now(),
-            overwrite: true,
-            httpOnly: true,
+            // overwrite: true,
+            // httpOnly: true,
           }
         )
         .send({
