@@ -78,10 +78,10 @@ async function login({ email, password, res }) {
           {
             expire: 360000 + Date.now(),
             // overwrite: true,
-            // secure: true,
+            secure: true,
             // httpOnly: true,
             // resave: true,
-            // SameSite:None
+            SameSite: None,
           }
         )
         .send({
