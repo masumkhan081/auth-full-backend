@@ -68,7 +68,8 @@ async function login({ email, password, res }) {
     // email and associated password matched and verified
     if (user.isVerified) {
       console.log(tokenHeaderKey, "  <<<<    ", user.id, tokenSecret);
-      res.status(200)
+      res
+        .status(200)
         .cookie(
           tokenHeaderKey,
           JSON.stringify({
@@ -77,7 +78,8 @@ async function login({ email, password, res }) {
           {
             expire: 360000 + Date.now(),
             // overwrite: true,
-            // httpOnly: true,
+            httpOnly: false,
+            secure: false,
           }
         )
         .send({
