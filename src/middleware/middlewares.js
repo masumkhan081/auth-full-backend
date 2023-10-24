@@ -40,7 +40,7 @@ async function authorization(req, res, next) {
   }
 }
 
-module.exports = { authentication, authorization, originControl };
+module.exports = {  originControl };
 
 //  401 - invalid credentials
 //  403 - Forbidden - has valid credentials but not enough privileges
