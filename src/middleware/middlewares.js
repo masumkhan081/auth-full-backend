@@ -5,7 +5,8 @@ const tokenHeaderKey = process.env.HEADER_KEY;
 const userModel = require("../model/user");
 
 function originControl(req, res, next) {
-  res.header({ "Access-Control-Allow-Origin": "http://localhost:5173" });
+  //   http://localhost:5173
+  res.header({ "Access-Control-Allow-Origin": "https://auth-full.vercel.app" });
   next();
 }
 
@@ -40,7 +41,7 @@ async function authorization(req, res, next) {
   }
 }
 
-module.exports = {  originControl };
+module.exports = { originControl };
 
 //  401 - invalid credentials
 //  403 - Forbidden - has valid credentials but not enough privileges
