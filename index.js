@@ -14,7 +14,8 @@ initDB();
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+// http://localhost:5173
+app.use(cors({ origin: "https://auth-full.vercel.app", credentials: true }));
 app.use(originControl);
 
 // routes: login, register, recover, reset, verify, logout ...
