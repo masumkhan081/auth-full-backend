@@ -49,6 +49,7 @@ router.post("/recovery", async (req, res) => {
 
 router.get("/recovery/:token", (req, res) => {
   // destructuring the expected
+   
   resetPw({ token: req.params.token, res });
 });
 

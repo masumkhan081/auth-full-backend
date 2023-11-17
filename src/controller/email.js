@@ -22,9 +22,9 @@ const sendOTPMail = ({ user, res, successMessage }) => {
     .then((result) => {
       result.accepted.includes(user.email)
         ? res.status(201).send({
-            message: successMessage,
-            token: getOtpToken({ otp: generatedOTP, email: user.email }),
-          })
+          message: successMessage,
+          token: getOtpToken({ otp: generatedOTP, email: user.email }),
+        })
         : res.status(400).send({ message: "Error sendign otp to the mail" });
     })
     .catch((err) => {
@@ -47,10 +47,10 @@ async function sendResetMail({ user, res }) {
     .sendMail(mailOptions)
     .then((result) => {
       result
-        ? res.status(400).json("A recovery mail has been sent ")
+        ? res.status(200).send({ message: "A recovery mail has been sent " })
         : res
-            .status(400)
-            .send({ message: "Error sendign password reset mail" });
+          .status(400)
+          .send({ message: "Error sendign password reset mail" });
     })
     .catch((err) => {
       console.log(err);
@@ -71,10 +71,9 @@ const getVerificationMessage = (otp) =>
   `<h4 style="color:blue;text-align:center;">Please copy or type the OTP provided below: <br><br>${otp}`;
 
 function getResetLink(user) {
-  return `<h4 style="color:blue;text-align:center;">Please click the link to reset your password: </h4><br><br>${
-    process.env.BASE_URL
-  }/auth/recovery/${jwt.sign(
-    { id:user.id, email: user.email, expireAt: new Date().getTime() + 5 * 60000 },tokenSecret )}`;
+  return `<h4 style="color:blue;text-align:center;">Please click the link to reset your password: </h4><br><br>${process.env.BASE_URL
+    }/auth/recovery/${jwt.sign(
+      { id: user.id, email: user.email, expireAt: new Date().getTime() + 5 * 60000 }, tokenSecret)}`;
 }
 
 // return a relatable email sibject based on purpose of the mail
@@ -82,8 +81,8 @@ const setSubject = (action) =>
   action === "recovery"
     ? "Auth-Full: Recover Your Password"
     : action === "verification"
-    ? "Auth-Full: Verify Your Email"
-    : "";
+      ? "Auth-Full: Verify Your Email"
+      : "";
 
 const getMailOptions = ({ to, subject, html }) => {
   return {
@@ -117,7 +116,7 @@ const getOtpToken = ({ otp, email }) =>
       expireAt: new Date().getTime() + 5 * 60000,
     }),
     tokenSecret
-  ).toString(); 
+  ).toString();
 
 module.exports = {
   sendResetMail,

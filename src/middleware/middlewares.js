@@ -5,8 +5,8 @@ const tokenHeaderKey = process.env.HEADER_KEY;
 const userModel = require("../model/user");
 
 function originControl(req, res, next) {
-  //   http://localhost:5173
-  res.header({ "Access-Control-Allow-Origin": "https://auth-full.vercel.app" });
+  //   https://auth-full.vercel.app
+  res.header({ "Access-Control-Allow-Origin": "http://localhost:5173" });
   next();
 }
 

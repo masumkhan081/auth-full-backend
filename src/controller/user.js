@@ -5,6 +5,7 @@ const { sendOTPMail } = require("./email");
 const userModel = require("../model/user");
 const tokenHeaderKey = process.env.HEADER_KEY;
 const tokenSecret = process.env.TOKEN_SECRET;
+const bcrypt = require('bcrypt');
 
 async function isUserValid(req, res) {
   if (req.cookies[tokenHeaderKey]) {
@@ -12,14 +13,14 @@ async function isUserValid(req, res) {
       JSON.parse(req.cookies[tokenHeaderKey]).id
     );
     user
-      ? res.status(200).send({ status: "success", data: user })
-      : res.status(401).json("you are not logged in");
+      ? res.status(200).send({ status: "success", email: user.email, phone: user.phone, fullName: user.fullName })
+      : res.status(401).send({ message: "you are not logged in" });
   }
 }
 
 function logout(res) {
   res.clearCookie(tokenHeaderKey);
-  res.status(201).send("cleared. user logged out");
+  res.status(200).send("Dick Pulled Out Succesfully");
 }
 
 async function markValidated({ userEmail, userOTP, token, res }) {
@@ -44,9 +45,9 @@ async function signup({ fullName, email, password, phone, res }) {
   // already registered or not
   const existence = await userModel.findOne({ email: email }).exec();
 
-  if (existence.isVerified) {
-    res.status(409).send("Email is already in use. Please log in");
-  } else if (existence.isVerified == false) {
+  if (existence && existence.isVerified) {
+    res.status(409).send({ message: "Email is already in use.", nextPage: false });
+  } else if (existence && existence.isVerified == false) {
     sendOTPMail({
       user: existence,
       res,
@@ -54,65 +55,66 @@ async function signup({ fullName, email, password, phone, res }) {
         "Account already exist. We sent an OTP to your email for verification.",
     });
   } else {
+    const hash = await bcrypt.hash(password, 10);
     const user = await new userModel({
       fullName,
       email,
-      password,
+      password: hash,
       phone,
     }).save();
     user
       ? sendOTPMail({
-          user,
-          res,
-          successMessage:
-            "An OTP has been sent to your email for verification.",
-        })
+        user,
+        res,
+        successMessage:
+          "An OTP has been sent to your email for verification.",
+      })
       : res.status(400).send("Error creating account");
   }
 }
 
 async function login({ email, password, res }) {
   // registered or not
-  const user = await userModel.findOne({ email, password });
+  const user = await userModel.findOne({ email });
 
   if (user) {
     // email and associated password matched and verified
-    if (user.isVerified) {
-      console.log(tokenHeaderKey, "  <<<<    ", user.id, tokenSecret);
-      res
-        .status(200)
-        .cookie(
-          tokenHeaderKey,
-          JSON.stringify({
-            id: user.id,
-          }),
-          {
-            expire: 360000 + Date.now(),
-            // overwrite: true,
-            // secure: true,
-            // httpOnly: true,
-            // resave: true,
-            // SameSite: None,
-          }
-        )
-        .send({
-          email,
-          message: "You are logged in",
+    const bool = await bcrypt.compare(password, user.password);
+
+    if (bool) {
+      if (user.isVerified) {
+        res
+          .status(200)
+          .cookie(
+            tokenHeaderKey,
+            JSON.stringify({
+              id: user.id,
+            }),
+            {
+              expire: 360000 + Date.now(),
+            }
+          )
+          .send(
+            { nextPage: true, message: "You are logged in", email: user.email, phone: user.phone, fullName: user.fullName }
+          );
+      }
+      // email and associated password matched but email not-verified yet
+      else {
+        sendOTPMail({
+          user,
+          res,
+          successMessage:
+            "Account not verified yet. We sent an OTP to your email for verification.",
         });
+      }
     }
-    // email and associated password matched but not-verified
     else {
-      sendOTPMail({
-        user,
-        res,
-        successMessage:
-          "Account not verified yet. We sent an OTP to your email for verification.",
-      });
+      res.status(400).send({ nextPage: false, message: "Wrong Credentials" });
     }
   }
   // no user with that email in system
   else {
-    res.status(400).send("Wrong Credentials");
+    res.status(400).send({ nextPage: false, message: "Wrong Credentials" });
   }
 }
 
@@ -141,6 +143,7 @@ async function updatePw({ email, password, res }) {
 module.exports = {
   signup,
   login,
+  isUserValid,
   logout,
   resetPw,
   updatePw,
