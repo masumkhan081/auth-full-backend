@@ -12,7 +12,7 @@ initDB();
 
 // middlewares
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 // 
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
@@ -25,11 +25,7 @@ app.listen(3000, () => {
   console.log("running ...");
 });
 
-// // close the server
-app.get("/quit", function (req, res) {
-  res.send("closed");
-});
 // server closing endpoint; no need what so ever
-app.get("/", (req, res) => {
-  res.send(`<a href="/quit">quit</a>`);
+app.get("/Hi", (req, res) => {
+  res.send("Hello");
 });
