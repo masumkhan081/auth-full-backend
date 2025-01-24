@@ -24,7 +24,10 @@ app.use("/auth", require("./src/routes/auth"));
 app.listen(3000, () => {
   console.log("running ...");
 });
-
+// 
+app.get("/", (req, res) => {
+  res.send("Home");
+});
 // server closing endpoint; no need what so ever
 app.get("/Hi", (req, res) => {
   res.send("Hello");
